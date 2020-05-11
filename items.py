@@ -46,6 +46,7 @@ class Line(Stringified):
             "crafter_item",
             "electricity_consumption",
             "fuel_burn_rate",
+            "inserter_count",
             "item",
             "output_rate",
             "target_output_rate",
@@ -191,9 +192,9 @@ class Item:
         """
         # if desired_output_item is None:
         #     desired_output_item = self.outputs.keys()[0]
-        logging.debug(f"creation_pipeline of {self}")
+        # logging.debug(f"creation_pipeline of {self}")
         recipe = self.produced_by_recipes[0]
-        logging.debug(f">> using recipe {recipe}")
+        # logging.debug(f">> using recipe {recipe}")
         # _creation_pipeline = []
         # how am I made?
         selected_crafter = None
@@ -207,7 +208,9 @@ class Item:
             if crafter.base_speed > selected_crafter.base_speed:
                 selected_crafter = crafter
         crafter = selected_crafter
-        logging.debug(f">> crafter selected {crafter}")
+        if crafter is None:
+            logging.error(f"No crafter found for item {self}")
+        # logging.debug(f">> crafter selected {crafter}")
         pipeline_element = {
             "item": str(self),
             "target_output_rate": desired_output_rate,
@@ -218,14 +221,14 @@ class Item:
         unit_craft_time = recipe.crafting_time / crafter.speed  # seconds / item
         craft_quantity = recipe.outputs[str(self)]
         craft_rate = (craft_quantity / unit_craft_time) * (1 + crafter.productivity)
+        logging.debug(f"item {str(self)} :: unit craft rate {1/unit_craft_time} :: {str(crafter)}")
         crafters_required = ceil(desired_output_rate / craft_rate)
         actual_output_rate = crafters_required * craft_rate
         pipeline_element.update(
             {"crafter_count": crafters_required, "output_rate": actual_output_rate,}
         )
-        power_consumption = (
-            crafters_required * crafter.consumption
-        )  # 1000 kW = 1 MJ / s
+        power_consumption = crafters_required * crafter.consumption
+        # 1000 kW = 1 MJ / s
         if crafter.consumes == "burnable":
             fuel_item = _item_objects[burnable_fuel]
             fuel_value = fuel_item.fuel_value  # MJ
@@ -239,6 +242,9 @@ class Item:
             pipeline_element.update(
                 {"electricity_consumption": power_consumption,}
             )
+        # deal with inserters
+        inserter_consumption = crafters_required * crafter.inserter_count * crafter.inserter_consumption
+        pipeline_element.update({"electricity_consumption": inserter_consumption})
 
         assert selected_crafter, f"No appropriate crafter available for {recipe}"
         for _input, qty in recipe.inputs.items():

@@ -1,4 +1,9 @@
-class Crafter:
+class BaseItem:
+    inserter_count = 0
+    inserter_consumption = 20.11  # long inserter
+
+
+class Crafter(BaseItem):
     base_speed = 1  # per second
     base_productivity = 0
     pollution = 0  # per minute
@@ -25,7 +30,7 @@ class Smelter(Crafter):
 
 
 class Miner(Crafter):
-    base_productivity = 0.3
+    base_productivity = 0
 
 
 class Burnable:
@@ -48,14 +53,14 @@ class SteamEngineItem(Crafter):
     power_output = 900  # kW
 
 
-class PumpingItem:
+class PumpingItem(BaseItem):
     speed = 1200
     consumption = 0
     productivity = 0
     consumes = None
 
 
-class LabItem:
+class LabItem(BaseItem):
     max_consumption = 60
 
 
@@ -148,6 +153,7 @@ item_defs = [
             "pollution": 2,
             "max_consumption": 90,
             "consumes": "burnable",
+            "inserter_count": 3,
         },
     ),
     (
@@ -158,12 +164,19 @@ item_defs = [
             "pollution": 4,
             "max_consumption": 90,
             "consumes": "burnable",
+            "inserter_count": 3,
         },
     ),
     (
         "ElectricFurnace",
         (Smelter,),
-        {"base_speed": 2, "pollution": 1, "max_consumption": 186, "min_consumption": 6},
+        {
+            "base_speed": 2, 
+            "pollution": 1, 
+            "max_consumption": 186, 
+            "min_consumption": 6,
+            "inserter_count": 2,
+        },
     ),
     (
         "AssemblingMachine1",
@@ -173,6 +186,7 @@ item_defs = [
             "pollution": 4,
             "min_consumption": 2.5,
             "max_consumption": 77.5,
+            "inserter_count": 5,
         },
     ),
     (
@@ -183,6 +197,7 @@ item_defs = [
             "pollution": 3,
             "min_consumption": 5,
             "max_consumption": 155,
+            "inserter_count": 5,
         },
     ),
     (
@@ -193,6 +208,7 @@ item_defs = [
             "pollution": 2,
             "min_consumption": 12.5,
             "max_consumption": 388,
+            "inserter_count": 5,
         },
     ),
     (
@@ -213,6 +229,7 @@ item_defs = [
             "pollution": 4,
             "min_consumption": 7,
             "max_consumption": 217,
+            "inserter_count": 5,
         },
     ),
     (
@@ -225,7 +242,7 @@ item_defs = [
             "max_consumption": 362,
         },
     ),
-    ("Lab", (LabItem,), {}),
+    ("Lab", (LabItem,), {"inserter_count": 2}),
     # ("Beacon", (), {}),
     (
         "SpeedModule1",

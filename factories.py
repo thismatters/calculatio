@@ -1,3 +1,5 @@
+import logging
+
 from items import items
 from utils import AdditiveUpdateDict
 
@@ -19,7 +21,9 @@ class Factory:
     bus_items = [
         "IronPlate",
         "CopperPlate",
+        "Stone",
         "SteelPlate",
+        "PetroleumGas",
         "PlasticBar",
     ]
 
@@ -102,6 +106,7 @@ class Factory:
 
     def _satisfy_electricity_requirements(self):
         deficit = self._electric_deficit()
+        count = 0
         while deficit > 0:
             self.electricity_production_lines.append(getattr(
                 items, "Electricity").creation_pipeline(
@@ -110,6 +115,10 @@ class Factory:
 
             ))
             deficit = self._electric_deficit()
+            # count += 1
+            # if count > 5:
+            #     break
+
 
     def _burnable_demand(self, *, burnable_fuel):
         try:
@@ -173,6 +182,7 @@ class Factory:
     def reconcile(self):
         last_count = -1
         count = len(self.burnable_production_lines) + len(self.electricity_production_lines)
+
         while last_count < count:
             # calculate power reqs
             self._satisfy_electricity_requirements()
@@ -220,13 +230,47 @@ class PreFactory(Factory):
         "StoneFurnace",
     )
     desired_production_rates = {
-        "BurnerMiningDrill": 8,
-        "StoneFurnace": 4,
+        "AutomationSciencePack": 10,
+        "BurnerMiningDrill": 16,
+        "StoneFurnace": 8,
     }
-    bus_items = [
-        "IronPlate",
-        "Stone",
-        "CopperPlate",
-        "SteelPlate",
-        "PlasticBar",
-    ]
+
+
+class RedBottles(Factory):
+    crafting_items_available = (
+        "StoneFurnace",
+        "ElectricMiningDrill",
+        "AssemblingMachine1",
+        "Boiler",
+        "SteamEngine",
+        "OffshorePump",
+    )
+    desired_production_rates = {
+        "AutomationSciencePack": 1,
+    }
+
+
+class GreenBottles(RedBottles):
+    desired_production_rates = {
+        "AutomationSciencePack": 1,
+        "LogisticSciencePack": 1,
+    }
+
+
+class BlueBottles(GreenBottles):
+    crafting_items_available = (
+        "StoneFurnace",
+        "ElectricMiningDrill",
+        "AssemblingMachine2",
+        "Pumpjack",
+        "ChemicalPlant",
+        "OilRefinery",
+        "Boiler",
+        "SteamEngine",
+        "OffshorePump",
+    )
+    desired_production_rates = {
+        "AutomationSciencePack": 1,
+        "LogisticSciencePack": 1,
+        "ChemicalSciencePack": 1,
+    }
