@@ -11,9 +11,7 @@ _item_objects = {}
 class Stringified:
     def stringify(self, indent_depth=0):
         _sources = []
-        main_item = (
-            " " * indent_depth * 2 + self._stringify_template()
-        )
+        main_item = " " * indent_depth * 2 + self._stringify_template()
         _sources.append(main_item)
         for source in self.sources:
             _source = source.stringify(indent_depth=indent_depth + 1)
@@ -35,7 +33,7 @@ class BusLine(Stringified):
             setattr(self, k, v)
 
     def _stringify_template(self):
-        return (f">>> From bus '{self.item}', Input Rate: {self.input_rate}")
+        return f">>> From bus '{self.item}', Input Rate: {self.input_rate}"
 
 
 class Line(Stringified):
@@ -79,7 +77,7 @@ class Line(Stringified):
         source_item_lines = []
         remove_idx = None
         for idx, source in enumerate(self.sources):
-            if not isinstance(source, (Line, )):
+            if not isinstance(source, (Line,)):
                 continue
             if source.item == source_item:
                 remove_idx = idx
@@ -87,7 +85,9 @@ class Line(Stringified):
                 source_item_lines.extend(source.remove_source(source_item))
         if remove_idx is not None:
             removed = self.sources.pop(remove_idx)
-            replacement = BusLine(item=removed.item, input_rate=removed.target_output_rate)
+            replacement = BusLine(
+                item=removed.item, input_rate=removed.target_output_rate
+            )
             self.sources.insert(remove_idx, replacement)
             source_item_lines.append(removed)
 
@@ -97,7 +97,7 @@ class Line(Stringified):
         crafters = crafters or AdditiveUpdateDict()
         crafters.update({self.crafter_item: self.crafter_count})
         for source in self.sources:
-            if not isinstance(source, (Line, )):
+            if not isinstance(source, (Line,)):
                 continue
             crafters = source._crafters(crafters=crafters)
         return crafters
@@ -112,7 +112,7 @@ class Line(Stringified):
         if self.electricity_consumption is not None:
             demand = self.electricity_consumption
         for source in self.sources:
-            if not isinstance(source, (Line, )):
+            if not isinstance(source, (Line,)):
                 continue
             demand += source.total_electricity_demand
         return demand
@@ -123,7 +123,7 @@ class Line(Stringified):
         if self.item == "Electricity":
             production += self.output_rate
         for source in self.sources:
-            if not isinstance(source, (Line, )):
+            if not isinstance(source, (Line,)):
                 continue
             production += source.total_electricity_production
         return production
@@ -133,7 +133,7 @@ class Line(Stringified):
         if self.burnable_fuel is not None:
             burnables.update({self.burnable_fuel: self.fuel_burn_rate})
         for source in self.sources:
-            if not isinstance(source, (Line, )):
+            if not isinstance(source, (Line,)):
                 continue
             burnables = source._burnables(burnables=burnables)
         return burnables
@@ -148,7 +148,7 @@ class Line(Stringified):
             attr = "target_output_rate"
         items = AdditiveUpdateDict({self.item: getattr(self, attr)})
         for source in self.sources:
-            if not isinstance(source, (Line, )):
+            if not isinstance(source, (Line,)):
                 continue
             items.update(source._all_items(target=target))
         return items
@@ -205,7 +205,7 @@ class Item:
         for _input, input_qty in recipe.inputs.items():
             input_item = _item_objects[_input]
             # is base resource?
-            _qty = (qty * input_qty / output_qty)
+            _qty = qty * input_qty / output_qty
             if input_item.is_base_resource:
                 reqs.update({_input: _qty})
                 continue
@@ -228,7 +228,9 @@ class Item:
         """
         # how am I made?
         recipe = self.recipe()
-        crafter = self.crafter(recipe=recipe, crafting_items_available=crafting_items_available)
+        crafter = self.crafter(
+            recipe=recipe, crafting_items_available=crafting_items_available
+        )
         # logging.debug(f">> using recipe {recipe}")
         # logging.debug(f">> crafter selected {crafter}")
         pipeline_element = {
@@ -266,7 +268,9 @@ class Item:
                 {"electricity_consumption": power_consumption,}
             )
         # deal with inserters
-        inserter_consumption = crafters_required * crafter.inserter_count * crafter.inserter_consumption
+        inserter_consumption = (
+            crafters_required * crafter.inserter_count * crafter.inserter_consumption
+        )
         pipeline_element.update({"electricity_consumption": inserter_consumption})
 
         for _input, qty in recipe.inputs.items():

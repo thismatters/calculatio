@@ -16,7 +16,9 @@ class Crafter(BaseItem):
     def _modifier(self, attr):
         if self.module_selection is None:
             return 1
-        return 1 + getattr(self.module_selection, f"{attr}_increase") * self.effect_slots
+        return (
+            1 + getattr(self.module_selection, f"{attr}_increase") * self.effect_slots
+        )
 
     @property
     def speed(self):
@@ -173,7 +175,6 @@ item_defs = [
             "max_consumption": 90,
             "consumes": "burnable",
             "inserter_count": 3,
-
         },
     ),
     (
@@ -258,21 +259,9 @@ item_defs = [
     ),
     ("Lab", (LabItem,), {"inserter_count": 2}),
     # ("Beacon", (), {}),
-    (
-        "SpeedModule1",
-        (Module,),
-        {"consumption_increase": 0.5, "speed_increase": 0.2},
-    ),
-    (
-        "SpeedModule2",
-        (Module,),
-        {"consumption_increase": 0.6, "speed_increase": 0.3},
-    ),
-    (
-        "SpeedModule3",
-        (Module,),
-        {"consumption_increase": 0.7, "speed_increase": 0.5},
-    ),
+    ("SpeedModule1", (Module,), {"consumption_increase": 0.5, "speed_increase": 0.2},),
+    ("SpeedModule2", (Module,), {"consumption_increase": 0.6, "speed_increase": 0.3},),
+    ("SpeedModule3", (Module,), {"consumption_increase": 0.7, "speed_increase": 0.5},),
     ("EfficiencyModule1", (Module,), {"consumption_increase": -0.3}),
     ("EfficiencyModule2", (Module,), {"consumption_increase": -0.4}),
     ("EfficiencyModule3", (Module,), {"consumption_increase": -0.5}),

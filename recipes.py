@@ -19,7 +19,12 @@ class SmeltingRecipe(Recipe):
 
 
 class BasicCraftingRecipe(Recipe):
-    made_in = ["PlayerCrafter", "AssemblingMachine1", "AssemblingMachine2", "AssemblingMachine3"]
+    made_in = [
+        "PlayerCrafter",
+        "AssemblingMachine1",
+        "AssemblingMachine2",
+        "AssemblingMachine3",
+    ]
 
 
 class LiquidCraftingRecipe(Recipe):
