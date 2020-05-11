@@ -21,15 +21,32 @@ build starting powerfarm
 build starting labs (2)
 build starting bottles
 build red bottle line
-    * Iron 7/7 (burner/stone)
-    * Copper 4/4 (burner/stone)
-    * Coal 4 (burner)
-    * AssemblyMachine1 10
-    * power: 1/1/2 (pump/boiler/steamengine)
+    * start iron bus
+    * start copper bus
+    * start coal bus
+
 build green bottle line
+    * upgrade iron bus
+    * upgrade copper bus
+    * upgrade power gen
+    * upgrade coal bus
+    * lab upgrade
+    * assembly machine 2 line
 build blue bottle line
+    * upgrade iron bus
+    * start steel bus
+    * speed module line
+    * start petroleum bus
+    * start plastic bus
+    * upgrade copper bus
+    * upgrade power gen
+    * upgrade coal bus
+    * lab upgrade
 build purple bottle line
+    * lab upgrade
+    
 build yellow bottle line
+    * lab upgrade
 
 first upgrade 10 drills/10 furnace
     stone

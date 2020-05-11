@@ -270,7 +270,7 @@ class BlueBottles(GreenBottles):
         "OffshorePump",
     )
     desired_production_rates = {
-        "AutomationSciencePack": 1,
-        "LogisticSciencePack": 1,
-        "ChemicalSciencePack": 1,
+        "AutomationSciencePack": 2,
+        "LogisticSciencePack": 2,
+        "ChemicalSciencePack": 2,
     }
