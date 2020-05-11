@@ -25,9 +25,13 @@ class Factory:
         "SteelPlate",
         "PetroleumGas",
         "PlasticBar",
+        "SulfuricAcid",
+        "EngineUnit",
         "ElectronicCircuit",
         "AdvancedCircuit",
+        "ProcessingUnit",
     ]
+    crafted_item_counts = {}
     module = None
 
     def __init__(self, crafting_items_available=None, desired_production_rates=None, module=None):
@@ -46,13 +50,15 @@ class Factory:
         self.electricity_production = 0
         self.crafting_item_counts = AdditiveUpdateDict()
         self.miner_placements = AdditiveUpdateDict()
+        self.base_resources = AdditiveUpdateDict()
         self._module = None
         if self.module is not None:
             self._module = getattr(items, self.module)
-        self.tally()
-        self.reconcile()
+        self.satisfy_production_requirements()
+        self.reconcile_electricity_usage()
         self.split_bus_production()
-        # self._tally_power_requirements()
+        self.tally_equipment()
+        self.tally_base_resources()
 
     @property
     def totals(self):
@@ -66,7 +72,13 @@ class Factory:
         )
         return {f: getattr(self, f) for f in total_fields}
 
-    def tally(self):
+    @property
+    def lines(self):
+        return (
+            self.product_production_lines + self.bus_production_lines 
+            + self.electricity_production_lines + self.burnable_production_lines)
+    
+    def satisfy_production_requirements(self):
         for _item, production_rate in self.desired_production_rates.items():
             production_line = getattr(items, _item).creation_pipeline(
                 desired_output_rate=production_rate,
@@ -74,13 +86,18 @@ class Factory:
                 module=self._module,
             )
             self.product_production_lines.append(production_line)
-            for line in self.product_production_lines:
-                self._tally_line(line)
 
-    def _tally_line(self, line):
-        self.product_electricity_demand += line.total_electricity_demand
-        self.burnable_fuels.update(line.total_burnables)
-        self.crafting_item_counts.update(line.all_crafters)
+    def tally_equipment(self):
+        for line in self.lines:
+            self.crafting_item_counts.update(line.all_crafters)
+
+    def tally_base_resources(self):
+        to_craft = AdditiveUpdateDict()
+        to_craft.update(self.crafting_item_counts)
+        to_craft.update(self.crafted_item_counts)
+        for _item, qty in to_craft.items():
+            item = getattr(items, _item)
+            self.base_resources.update(item.base_resource_requirements(qty=qty))
 
     @property
     def items_produced(self):
@@ -123,9 +140,6 @@ class Factory:
                     module=self._module,
             ))
             deficit = self._electric_deficit()
-            # count += 1
-            # if count > 5:
-            #     break
 
 
     def _burnable_demand(self, *, burnable_fuel):
@@ -168,9 +182,6 @@ class Factory:
 
     def _consolidate_electricity_production(self):
         if len(self.electricity_production_lines) > 1:
-            # total = 0
-            # for line in self.electricity_production_lines:
-            #     total += line.target_output_rate
             self.electricity_production_lines = [getattr(
                 items, "Electricity").creation_pipeline(
                     desired_output_rate=self.electricity_demand,
@@ -191,7 +202,12 @@ class Factory:
                         module=self._module,
                 )]
 
-    def reconcile(self):
+    def reconcile_electricity_usage(self):
+        """Determine electricity consumption and generation lines"""
+        for line in self.product_production_lines + self.bus_production_lines:
+            self.product_electricity_demand += line.total_electricity_demand
+            self.burnable_fuels.update(line.total_burnables)
+
         last_count = -1
         count = len(self.burnable_production_lines) + len(self.electricity_production_lines)
 
@@ -208,11 +224,16 @@ class Factory:
         self._consolidate_burnable_production()
 
     def split_bus_production(self):
+        """Relegate bus item production to bus lines"""
         self.bus_production_lines = [l for l in self.product_production_lines if l.item in self.bus_items]
         self.product_production_lines = [l for l in self.product_production_lines if l.item not in self.bus_items]
         for bus_item in self.bus_items:
+            logging.debug(f"trying to remove bus item {bus_item}")
             for line in self.product_production_lines:
+                logging.debug(f">> checking line {line.item}")
+                logging.debug(f">> line has items {line.all_items_produced}")
                 if bus_item in line.all_items_produced:
+                    logging.debug(f">>>> here")
                     removed = line.remove_source(bus_item)
                     if removed:
                         self.bus_production_lines.extend(removed)
@@ -223,17 +244,21 @@ class Factory:
         busses = {i: 0 for i in self.bus_items}
         for line in self.bus_production_lines:
             busses[line.item] += line.target_output_rate
-        new_bus_production_linees = []
+        new_bus_production_lines = []
         for item, target in busses.items():
             if target == 0:
                 continue
-            new_bus_production_linees.append(getattr(
+            new_bus_line = getattr(
                 items, item).creation_pipeline(
                     desired_output_rate=target,
                     crafting_items_available=self.crafting_items_available,
                     module=self._module,
-            ))
-        self.bus_production_lines = new_bus_production_linees
+            )
+            for bus_item in self.bus_items:
+                if bus_item in new_bus_line.all_items_produced:
+                    new_bus_line.remove_source(bus_item)
+            new_bus_production_lines.append(new_bus_line)
+        self.bus_production_lines = new_bus_production_lines
 
 
 class PreFactory(Factory):
@@ -306,4 +331,11 @@ class YellowBottles(PurpleBottles):
         "ChemicalSciencePack": 3,
         "ProductionSciencePack": 3,
         "UtilitySciencePack": 3,
+    }
+    crafted_item_counts = {
+        "AutomationSciencePack": 6300,
+        "LogisticSciencePack": 6115,
+        "ChemicalSciencePack": 4050,
+        "ProductionSciencePack": 2100,
+        "UtilitySciencePack": 1300,
     }

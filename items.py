@@ -177,6 +177,41 @@ class Item:
     def __str__(self):
         return self.__class__.__name__
 
+    def recipe(self):
+        """Just grab the first recipe that works"""
+        return self.produced_by_recipes[0]
+
+    def crafter(self, *, recipe, crafting_items_available):
+        selected_crafter = None
+        for _crafter in recipe.made_in:
+            if _crafter not in crafting_items_available:
+                continue
+            crafter = _item_objects[_crafter]
+            if selected_crafter is None:
+                selected_crafter = crafter
+                continue
+            if crafter.base_speed > selected_crafter.base_speed:
+                selected_crafter = crafter
+            if selected_crafter is None:
+                logging.error(f"No crafter found for item {self}")
+                raise Exception(f"Item {self} cannot be produced, no crafter")
+        return selected_crafter
+
+    def base_resource_requirements(self, *, qty=1):
+        reqs = AdditiveUpdateDict()
+        recipe = self.recipe()
+        # determine output quantity and scale
+        output_qty = recipe.outputs[str(self)]
+        for _input, input_qty in recipe.inputs.items():
+            input_item = _item_objects[_input]
+            # is base resource?
+            _qty = (qty * input_qty / output_qty)
+            if input_item.is_base_resource:
+                reqs.update({_input: _qty})
+                continue
+            reqs.update(input_item.base_resource_requirements(qty=_qty))
+        return reqs
+
     def creation_pipeline(
         self,
         desired_output_rate=1,
@@ -191,28 +226,10 @@ class Item:
         """Specifies the numbers of equipment needed to produce the
         `desired_output_rate` (per second) from base resources
         """
-        # if desired_output_item is None:
-        #     desired_output_item = self.outputs.keys()[0]
-        logging.debug(f"creation_pipeline of {self}")
-        recipe = self.produced_by_recipes[0]
-        # logging.debug(f">> using recipe {recipe}")
-        # _creation_pipeline = []
         # how am I made?
-        selected_crafter = None
-        for _crafter in recipe.made_in:
-            if _crafter not in crafting_items_available:
-                continue
-            crafter = _item_objects[_crafter]
-            if selected_crafter is None:
-                selected_crafter = crafter
-                continue
-            if crafter.base_speed > selected_crafter.base_speed:
-                selected_crafter = crafter
-        crafter = selected_crafter
-        if module:
-            crafter.module_selection = module
-        if crafter is None:
-            logging.error(f"No crafter found for item {self}")
+        recipe = self.recipe()
+        crafter = self.crafter(recipe=recipe, crafting_items_available=crafting_items_available)
+        # logging.debug(f">> using recipe {recipe}")
         # logging.debug(f">> crafter selected {crafter}")
         pipeline_element = {
             "item": str(self),
@@ -221,10 +238,13 @@ class Item:
             "recipe": recipe,
             "sources": [],
         }
+        if module:
+            crafter.module_selection = module
+
         unit_craft_time = recipe.crafting_time / crafter.speed  # seconds / item
         craft_quantity = recipe.outputs[str(self)]
         craft_rate = (craft_quantity / unit_craft_time) * (1 + crafter.productivity)
-        logging.debug(f"item {str(self)} :: unit craft rate {1/unit_craft_time} :: {str(crafter)}")
+        # logging.debug(f"item {str(self)} :: unit craft rate {1/unit_craft_time} :: {str(crafter)}")
         crafters_required = ceil(desired_output_rate / craft_rate)
         actual_output_rate = crafters_required * craft_rate
         pipeline_element.update(
@@ -249,7 +269,6 @@ class Item:
         inserter_consumption = crafters_required * crafter.inserter_count * crafter.inserter_consumption
         pipeline_element.update({"electricity_consumption": inserter_consumption})
 
-        assert selected_crafter, f"No appropriate crafter available for {recipe}"
         for _input, qty in recipe.inputs.items():
             # find (best) recipe for each input
             input_item = _item_objects[_input]
@@ -260,9 +279,8 @@ class Item:
                     crafting_items_available=crafting_items_available,
                 )
             )
-        line = Line(**pipeline_element)
 
-        return line
+        return Line(**pipeline_element)
 
 
 recipes = dict(
@@ -292,12 +310,13 @@ items = Items()
 
 if __name__ == "__main__":
     # print("\n".join(items.keys()))
-
-    red_pack = items.AutomationSciencePack.creation_pipeline(desired_output_rate=5)
-    print(red_pack)
-    print(red_pack.all_crafters)
-    print(red_pack.total_electricity_demand)
-    print(red_pack.total_burnables)
+    red_pack = items.AutomationSciencePack
+    red_pack_line = red_pack.creation_pipeline(desired_output_rate=5)
+    print(red_pack_line)
+    print(red_pack_line.all_crafters)
+    print(red_pack_line.total_electricity_demand)
+    print(red_pack_line.total_burnables)
+    print(red_pack.base_resource_requirements(qty=5))
     ce = items.CliffExplosives.creation_pipeline(
         desired_output_rate=0.75,
         crafting_items_available=(
@@ -332,3 +351,4 @@ if __name__ == "__main__":
             crafting_items_available=("SteamEngine", "Boiler", "OffshorePump"),
         )
     )
+    print(items.PetroleumGas.base_resource_requirements(qty=1))

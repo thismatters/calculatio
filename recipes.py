@@ -61,7 +61,7 @@ class WaterExtraction(ExtractionRecipe):
 
 
 class CrudeOilExtraction(ExtractionRecipe):
-    outputs = {"CrudeOil": 1}
+    outputs = {"CrudeOil": 50}
     made_in = ["Pumpjack"]
 
 
