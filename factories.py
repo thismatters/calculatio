@@ -25,13 +25,18 @@ class Factory:
         "SteelPlate",
         "PetroleumGas",
         "PlasticBar",
+        "ElectronicCircuit",
+        "AdvancedCircuit",
     ]
+    module = None
 
-    def __init__(self, crafting_items_available=None, desired_production_rates=None):
+    def __init__(self, crafting_items_available=None, desired_production_rates=None, module=None):
         if crafting_items_available:
             self.crafting_items_available = crafting_items_available
         if desired_production_rates:
             self.desired_production_rates = desired_production_rates
+        if module:
+            self.module = module
         self.burnable_fuels = AdditiveUpdateDict()
         self.product_production_lines = []
         self.bus_production_lines = []
@@ -41,7 +46,9 @@ class Factory:
         self.electricity_production = 0
         self.crafting_item_counts = AdditiveUpdateDict()
         self.miner_placements = AdditiveUpdateDict()
-
+        self._module = None
+        if self.module is not None:
+            self._module = getattr(items, self.module)
         self.tally()
         self.reconcile()
         self.split_bus_production()
@@ -64,6 +71,7 @@ class Factory:
             production_line = getattr(items, _item).creation_pipeline(
                 desired_output_rate=production_rate,
                 crafting_items_available=self.crafting_items_available,
+                module=self._module,
             )
             self.product_production_lines.append(production_line)
             for line in self.product_production_lines:
@@ -111,8 +119,8 @@ class Factory:
             self.electricity_production_lines.append(getattr(
                 items, "Electricity").creation_pipeline(
                     desired_output_rate=deficit,
-                    crafting_items_available=self.crafting_items_available
-
+                    crafting_items_available=self.crafting_items_available,
+                    module=self._module,
             ))
             deficit = self._electric_deficit()
             # count += 1
@@ -153,7 +161,9 @@ class Factory:
                 self.burnable_production_lines.append(getattr(
                     items, burnable_fuel).creation_pipeline(
                         desired_output_rate=deficit,
-                        crafting_items_available=self.crafting_items_available))
+                        crafting_items_available=self.crafting_items_available,
+                        module=self._module,
+                ))
                 deficit = self._burnable_deficit(burnable_fuel=burnable_fuel)
 
     def _consolidate_electricity_production(self):
@@ -164,7 +174,8 @@ class Factory:
             self.electricity_production_lines = [getattr(
                 items, "Electricity").creation_pipeline(
                     desired_output_rate=self.electricity_demand,
-                    crafting_items_available=self.crafting_items_available
+                    crafting_items_available=self.crafting_items_available,
+                    module=self._module,
             )]
 
     def _consolidate_burnable_production(self):
@@ -176,7 +187,8 @@ class Factory:
                 self.burnable_production_lines = [getattr(
                     items, item).creation_pipeline(
                         desired_output_rate=self._burnable_demand(burnable_fuel=item),
-                        crafting_items_available=self.crafting_items_available
+                        crafting_items_available=self.crafting_items_available,
+                        module=self._module,
                 )]
 
     def reconcile(self):
@@ -219,6 +231,7 @@ class Factory:
                 items, item).creation_pipeline(
                     desired_output_rate=target,
                     crafting_items_available=self.crafting_items_available,
+                    module=self._module,
             ))
         self.bus_production_lines = new_bus_production_linees
 
@@ -259,7 +272,7 @@ class GreenBottles(RedBottles):
 
 class BlueBottles(GreenBottles):
     crafting_items_available = (
-        "StoneFurnace",
+        "SteelFurnace",
         "ElectricMiningDrill",
         "AssemblingMachine2",
         "Pumpjack",
@@ -273,4 +286,24 @@ class BlueBottles(GreenBottles):
         "AutomationSciencePack": 2,
         "LogisticSciencePack": 2,
         "ChemicalSciencePack": 2,
+    }
+
+
+class PurpleBottles(BlueBottles):
+    desired_production_rates = {
+        "AutomationSciencePack": 3,
+        "LogisticSciencePack": 3,
+        "ChemicalSciencePack": 3,
+        "ProductionSciencePack": 3,
+    }
+    module = "SpeedModule1"
+
+
+class YellowBottles(PurpleBottles):
+    desired_production_rates = {
+        "AutomationSciencePack": 3,
+        "LogisticSciencePack": 3,
+        "ChemicalSciencePack": 3,
+        "ProductionSciencePack": 3,
+        "UtilitySciencePack": 3,
     }

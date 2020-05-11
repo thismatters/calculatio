@@ -208,41 +208,37 @@ class ElectricEngineUnitRecipe(LiquidCraftingRecipe):
 
 class FlyingRoboticFrameRecipe(BasicCraftingRecipe):
     crafting_time = 20
-    inputs = (
-        {
-            "SteelPlate": 1,
-            "Battery": 2,
-            "ElectronicCircuit": 3,
-            "ElectricEngineUnit": 1,
-        },
-    )
+    inputs = {
+        "SteelPlate": 1,
+        "Battery": 2,
+        "ElectronicCircuit": 3,
+        "ElectricEngineUnit": 1,
+    }
     outputs = {"FlyingRoboticFrame": 1}
 
 
 class SatelliteRecipe(BasicCraftingRecipe):
     crafting_time = 5
-    inputs = (
-        {
-            "ProcessingUnit": 100,
-            "LowDensityStructure": 100,
-            "RocketFuel": 50,
-            "SolarPanel": 100,
-            "Accumulator": 100,
-            "Radar": 5,
-        },
-    )
+    inputs = {
+        "ProcessingUnit": 100,
+        "LowDensityStructure": 100,
+        "RocketFuel": 50,
+        "SolarPanel": 100,
+        "Accumulator": 100,
+        "Radar": 5,
+    }
     outputs = {"Satellite": 1}
 
 
 class RocketControlUnitRecipe(BasicCraftingRecipe):
     crafting_time = 30
-    inputs = ({"ProcessingUnit": 1, "SpeedModule1": 1},)
+    inputs = {"ProcessingUnit": 1, "SpeedModule1": 1}
     outputs = {"RocketControlUnit": 1}
 
 
 class LowDensityStructureRecipe(BasicCraftingRecipe):
     crafting_time = 20
-    inputs = ({"CopperPlate": 20, "SteelPlate": 2, "PlasticBar": 5},)
+    inputs = {"CopperPlate": 20, "SteelPlate": 2, "PlasticBar": 5}
     outputs = {"LowDensityStructure": 1}
 
 
@@ -437,22 +433,22 @@ class EfficiencyModule3Recipe(BasicCraftingRecipe):
     outputs = {"EfficiencyModule3": 1}
 
 
-class ProductvityModule1Recipe(BasicCraftingRecipe):
+class ProductivityModule1Recipe(BasicCraftingRecipe):
     crafting_time = 5
     inputs = {"ElectronicCircuit": 5, "AdvancedCircuit": 5}
-    outputs = {"ProductvityModule1": 1}
+    outputs = {"ProductivityModule1": 1}
 
 
-class ProductvityModule2Recipe(BasicCraftingRecipe):
+class ProductivityModule2Recipe(BasicCraftingRecipe):
     crafting_time = 5
     inputs = {"AdvancedCircuit": 5, "ProcessingUnit": 5, "ProductivityModule1": 4}
-    outputs = {"ProductvityModule2": 1}
+    outputs = {"ProductivityModule2": 1}
 
 
-class ProductvityModule3Recipe(BasicCraftingRecipe):
+class ProductivityModule3Recipe(BasicCraftingRecipe):
     crafting_time = 5
     inputs = {"AdvancedCircuit": 5, "ProcessingUnit": 5, "ProductivityModule2": 5}
-    outputs = {"ProductvityModule3": 1}
+    outputs = {"ProductivityModule3": 1}
 
 
 class WoodenChestRecipe(BasicCraftingRecipe):

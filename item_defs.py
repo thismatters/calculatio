@@ -1,6 +1,8 @@
 class BaseItem:
     inserter_count = 0
     inserter_consumption = 20.11  # long inserter
+    module_selection = None
+    effect_slots = 0  # ea
 
 
 class Crafter(BaseItem):
@@ -9,20 +11,26 @@ class Crafter(BaseItem):
     pollution = 0  # per minute
     max_consumption = 0  # kW
     min_consumption = 0  # kW
-    effect_slots = 0  # ea
     consumes = "electricity"
+
+    def _modifier(self, attr):
+        if self.module_selection is None:
+            return 1
+        return 1 + getattr(self.module_selection, f"{attr}_increase") * self.effect_slots
 
     @property
     def speed(self):
-        return self.base_speed
+        return self.base_speed * self._modifier("speed")
 
     @property
     def productivity(self):
-        return self.base_productivity
+        modifier = 0
+        return self.base_productivity * self._modifier("productivity")
 
     @property
     def consumption(self):
-        return self.max_consumption
+        modifier = 0
+        return self.max_consumption * max(self._modifier("consumption"), 0.2)
 
 
 class Smelter(Crafter):
@@ -65,7 +73,7 @@ class LabItem(BaseItem):
 
 
 class Module:
-    energy_consumption_increase = 0
+    consumption_increase = 0
     speed_increase = 0
     productivity_increase = 0
     pollution_increase = 0
@@ -102,7 +110,7 @@ item_defs = [
     ("ProcessingUnit", (), {}),
     ("EngineUnit", (), {}),
     ("ElectricEngineUnit", (), {}),
-    ("FlyingRobotFrame", (), {}),
+    ("FlyingRoboticFrame", (), {}),
     ("Satellite", (), {}),
     ("RocketControlUnit", (), {}),
     ("LowDensityStructure", (), {}),
@@ -139,7 +147,7 @@ item_defs = [
     (
         "ElectricMiningDrill",
         (Miner,),
-        {"base_speed": 0.5, "pollution": 10, "max_consumption": 90,},
+        {"base_speed": 0.5, "pollution": 10, "max_consumption": 90, "effect_slots": 3},
     ),
     ("OffshorePump", (PumpingItem,), {"speed": 1},),
     ("Pumpjack", (Miner,), {"base_speed": 1, "pollution": 10, "max_consumption": 90,}),
@@ -165,17 +173,19 @@ item_defs = [
             "max_consumption": 90,
             "consumes": "burnable",
             "inserter_count": 3,
+
         },
     ),
     (
         "ElectricFurnace",
         (Smelter,),
         {
-            "base_speed": 2, 
-            "pollution": 1, 
-            "max_consumption": 186, 
+            "base_speed": 2,
+            "pollution": 1,
+            "max_consumption": 186,
             "min_consumption": 6,
             "inserter_count": 2,
+            "effect_slots": 2,
         },
     ),
     (
@@ -198,6 +208,7 @@ item_defs = [
             "min_consumption": 5,
             "max_consumption": 155,
             "inserter_count": 5,
+            "effect_slots": 2,
         },
     ),
     (
@@ -209,6 +220,7 @@ item_defs = [
             "min_consumption": 12.5,
             "max_consumption": 388,
             "inserter_count": 5,
+            "effect_slots": 4,
         },
     ),
     (
@@ -219,6 +231,7 @@ item_defs = [
             "pollution": 6,
             "min_consumption": 14,
             "max_consumption": 434,
+            "effect_slots": 3,
         },
     ),
     (
@@ -230,6 +243,7 @@ item_defs = [
             "min_consumption": 7,
             "max_consumption": 217,
             "inserter_count": 5,
+            "effect_slots": 3,
         },
     ),
     (
@@ -247,26 +261,26 @@ item_defs = [
     (
         "SpeedModule1",
         (Module,),
-        {"energy_consumption_increase": 0.5, "speed_increase": 0.2},
+        {"consumption_increase": 0.5, "speed_increase": 0.2},
     ),
     (
         "SpeedModule2",
         (Module,),
-        {"energy_consumption_increase": 0.6, "speed_increase": 0.3},
+        {"consumption_increase": 0.6, "speed_increase": 0.3},
     ),
     (
-        "SpeedModule2",
+        "SpeedModule3",
         (Module,),
-        {"energy_consumption_increase": 0.7, "speed_increase": 0.5},
+        {"consumption_increase": 0.7, "speed_increase": 0.5},
     ),
-    ("EfficiencyModule1", (Module,), {"energy_consumption_increase": -0.3}),
-    ("EfficiencyModule2", (Module,), {"energy_consumption_increase": -0.4}),
-    ("EfficiencyModule2", (Module,), {"energy_consumption_increase": -0.5}),
+    ("EfficiencyModule1", (Module,), {"consumption_increase": -0.3}),
+    ("EfficiencyModule2", (Module,), {"consumption_increase": -0.4}),
+    ("EfficiencyModule3", (Module,), {"consumption_increase": -0.5}),
     (
         "ProductivityModule1",
         (Module,),
         {
-            "energy_consumption_increase": 0.4,
+            "consumption_increase": 0.4,
             "speed_increase": -0.15,
             "pollution_increase": 0.05,
             "productivity_increase": 0.04,
@@ -276,17 +290,17 @@ item_defs = [
         "ProductivityModule2",
         (Module,),
         {
-            "energy_consumption_increase": 0.6,
+            "consumption_increase": 0.6,
             "speed_increase": -0.15,
             "pollution_increase": 0.07,
             "productivity_increase": 0.06,
         },
     ),
     (
-        "ProductivityModule2",
+        "ProductivityModule3",
         (Module,),
         {
-            "energy_consumption_increase": 0.8,
+            "consumption_increase": 0.8,
             "speed_increase": -0.15,
             "pollution_increase": 0.1,
             "productivity_increase": 0.1,

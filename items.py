@@ -186,13 +186,14 @@ class Item:
             "StoneFurnace",
         ),
         burnable_fuel="Coal",
+        module=None,
     ):
         """Specifies the numbers of equipment needed to produce the
         `desired_output_rate` (per second) from base resources
         """
         # if desired_output_item is None:
         #     desired_output_item = self.outputs.keys()[0]
-        # logging.debug(f"creation_pipeline of {self}")
+        logging.debug(f"creation_pipeline of {self}")
         recipe = self.produced_by_recipes[0]
         # logging.debug(f">> using recipe {recipe}")
         # _creation_pipeline = []
@@ -208,6 +209,8 @@ class Item:
             if crafter.base_speed > selected_crafter.base_speed:
                 selected_crafter = crafter
         crafter = selected_crafter
+        if module:
+            crafter.module_selection = module
         if crafter is None:
             logging.error(f"No crafter found for item {self}")
         # logging.debug(f">> crafter selected {crafter}")

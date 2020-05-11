@@ -35,6 +35,7 @@ build green bottle line
 build blue bottle line
     * upgrade iron bus
     * start steel bus
+    * upgrade assembly machines on red and green lines
     * speed module line
     * start petroleum bus
     * start plastic bus
@@ -43,8 +44,9 @@ build blue bottle line
     * upgrade coal bus
     * lab upgrade
 build purple bottle line
+    * add speed modules to blue, red, and green lines
     * lab upgrade
-    
+
 build yellow bottle line
     * lab upgrade
 
