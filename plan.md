@@ -26,37 +26,65 @@ build red bottle line
     * start coal bus
     * assembly machine 1 line
 build green bottle line
-    * upgrade iron bus
-    * upgrade copper bus
-    * upgrade power gen
-    * upgrade coal bus
+    * upgrade iron bus (phase 2)
+    * upgrade copper bus (phase 2)
+    * upgrade power gen (phase 2)
+    * upgrade coal bus (phase 2)
+    * start electronic circuit bus
     * lab upgrade
     * assembly machine 2 line
 build blue bottle line
-    * upgrade iron bus
+    * switch to advanced oil processing and get to cracking
+    * upgrade iron bus (phase 3)
     * start steel bus
     * upgrade assembly machines on all lines
     * speed module 1 line (output will be reused in rocket control unit production)
     * start petroleum bus
     * start plastic bus
-    * upgrade copper bus
-    * upgrade power gen
-    * upgrade coal bus
+    * start advanced circuit bus
+    * start engine unit bus
+    * upgrade copper bus (phase 3)
+    * upgrade power gen (phase 3)
+    * upgrade coal bus (phase 3)
+    * upgrade electronic circuit bus (phase 3)
     * lab upgrade
 build purple bottle line
     * add speed modules to all lines
     * lab upgrade
-    * switch to advanced oil processing
-
+    * upgrade power gen (phase 4)
+    * upgrade coal bus (phase 4)
+    * upgrade iron bus  (phase 4)
+    * upgrade copper bus (phase 4)
+    * upgrade steel bus (phase 4)
+    * upgrade petroleum bus (phase 4)
+    * upgrade plastic bus (phase 4)
+    * upgrade electronic circuit bus (phase 4)
+    * upgrade advanced circuit bus (phase 4)
+    * start stone bus
+    * start stone brick bus
+    * start rocket fuel line
 build yellow bottle line
     * lab upgrade
-
+    * start sulfuric acid bus
+    * start lubricant bus
+    * start processing unit bus
+    * upgrade power gen (phase 5)
+    * upgrade coal bus (phase 5)
+    * upgrade iron bus  (phase 5)
+    * upgrade copper bus (phase 5)
+    * upgrade steel bus (phase 5)
+    * upgrade petroleum bus (phase 5)
+    * upgrade plastic bus (phase 5)
+    * upgrade electronic circuit bus (phase 5)
+    * upgrade advanced circuit bus (phase 5)
+    * build concrete line
+    * rocket silo (needs concrete)
+    * surround with beacons (fill with speed modules)
 build rocket launch line
-    * rocket control unit line (reuse speed module 1)
-    * low density structure
-    * rocket fuel line
-    * rocket silo
-
+    * rocket control unit line (reuse speed module 1; reroute processing unit bus)
+    * low density structure (re-route from yellow bottle production)
+    * rocket fuel line (solid fuel, light oil)
+    *
 Launch!
 
 

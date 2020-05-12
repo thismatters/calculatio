@@ -1,5 +1,6 @@
 from math import ceil
 import logging
+logging.basicConfig(level=logging.DEBUG)
 
 from item_defs import item_defs
 import recipes as _recipes
@@ -177,8 +178,12 @@ class Item:
     def __str__(self):
         return self.__class__.__name__
 
-    def recipe(self):
+    def recipe(self, *, advanced_oil_processing):
         """Just grab the first recipe that works"""
+        if advanced_oil_processing:
+            recipes = {r.__name__: r for f in self.produced_by_recipes}
+            if "AdvancedOilRecipe" in recipes:
+                return recipes["AdvancedOilRecipe"]
         return self.produced_by_recipes[0]
 
     def crafter(self, *, recipe, crafting_items_available):
@@ -197,9 +202,9 @@ class Item:
                 raise Exception(f"Item {self} cannot be produced, no crafter")
         return selected_crafter
 
-    def base_resource_requirements(self, *, qty=1):
+    def base_resource_requirements(self, *, qty=1, advanced_oil_processing=False):
         reqs = AdditiveUpdateDict()
-        recipe = self.recipe()
+        recipe = self.recipe(advanced_oil_processing=advanced_oil_processing)
         # determine output quantity and scale
         output_qty = recipe.outputs[str(self)]
         for _input, input_qty in recipe.inputs.items():
@@ -207,9 +212,13 @@ class Item:
             # is base resource?
             _qty = qty * input_qty / output_qty
             if input_item.is_base_resource:
+                logging.debug(f"base resource {input_item} {_qty}")
                 reqs.update({_input: _qty})
                 continue
-            reqs.update(input_item.base_resource_requirements(qty=_qty))
+            logging.debug(f"recurse on {input_item} {_qty}")
+            reqs.update(input_item.base_resource_requirements(
+                qty=_qty, advanced_oil_processing=advanced_oil_processing))
+
         return reqs
 
     def creation_pipeline(
@@ -222,12 +231,13 @@ class Item:
         ),
         burnable_fuel="Coal",
         module=None,
+        advanced_oil_processing=False
     ):
         """Specifies the numbers of equipment needed to produce the
         `desired_output_rate` (per second) from base resources
         """
         # how am I made?
-        recipe = self.recipe()
+        recipe = self.recipe(advanced_oil_processing=advanced_oil_processing)
         crafter = self.crafter(
             recipe=recipe, crafting_items_available=crafting_items_available
         )
@@ -356,3 +366,4 @@ if __name__ == "__main__":
         )
     )
     print(items.PetroleumGas.base_resource_requirements(qty=1))
+    print(items.RocketPart.base_resource_requirements(qty=100))

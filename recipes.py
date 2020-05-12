@@ -195,7 +195,7 @@ class AdvancedCircuitRecipe(BasicCraftingRecipe):
 
 class ProcessingUnitRecipe(LiquidCraftingRecipe):
     crafting_time = 10
-    inputs = {"SulfuricAcid": 2, "ElectronicCircuit": 2, "AdvancedCircuit": 2}
+    inputs = {"SulfuricAcid": 5, "ElectronicCircuit": 20, "AdvancedCircuit": 2}
     outputs = {"ProcessingUnit": 1}
 
 
@@ -251,6 +251,19 @@ class RocketFuelRecipe(LiquidCraftingRecipe):
     crafting_time = 30
     inputs = {"SolidFuel": 10, "LightOil": 10}
     outputs = {"RocketFuel": 1}
+
+
+class RocketSiloRecipe(BasicCraftingRecipe):
+    crafting_time = 30
+    inputs = {"Concrete": 1000, "ElectricEngineUnit": 200, "Pipe": 100, "ProcessingUnit": 200, "SteelPlate": 1000}
+    outputs = {"RocketSilo": 1}
+
+
+class RocketPartRecipe(BasicCraftingRecipe):
+    made_in = ("RocketSilo",)
+    crafting_time = 3
+    inputs = {"LowDensityStructure": 10, "RocketControlUnit": 10, "RocketFuel": 10}
+    outputs = {"RocketPart": 1}
 
 
 class AutomationSciencePackRecipe(BasicCraftingRecipe):
