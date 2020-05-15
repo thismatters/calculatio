@@ -47,15 +47,15 @@ class Factory:
         crafted_item_counts=None,
         advanced_oil_processing=None,
     ):
-        if crafting_items_available:
+        if crafting_items_available is not None:
             self.crafting_items_available = crafting_items_available
-        if desired_production_rates:
+        if desired_production_rates is not None:
             self.desired_production_rates = desired_production_rates
-        if module:
+        if module is not None:
             self.module = module
-        if bus_items:
+        if bus_items is not None:
             self.bus_items = bus_items
-        if crafted_item_counts:
+        if crafted_item_counts is not None:
             self.crafted_item_counts = crafted_item_counts
         if advanced_oil_processing is not None:
             self.advanced_oil_processing = advanced_oil_processing
@@ -102,7 +102,7 @@ class Factory:
     def satisfy_production_requirements(self):
         for _item, production_rate in self.desired_production_rates.items():
             production_line = getattr(items, _item).creation_pipeline(
-                advanced_oil_processing=advanced_oil_processing,
+                advanced_oil_processing=self.advanced_oil_processing,
                 desired_output_rate=production_rate,
                 crafting_items_available=self.crafting_items_available,
                 module=self._module,
@@ -121,7 +121,7 @@ class Factory:
             item = getattr(items, _item)
             logging.debug(f"checking resources {item} {qty}")
             self.base_resources.update(item.base_resource_requirements(
-                qty=qty, advanced_oil_processing=advanced_oil_processing))
+                qty=qty, advanced_oil_processing=self.advanced_oil_processing))
 
     @property
     def items_produced(self):
@@ -159,7 +159,7 @@ class Factory:
         while deficit > 0:
             self.electricity_production_lines.append(
                 getattr(items, "Electricity").creation_pipeline(
-                    advanced_oil_processing=advanced_oil_processing,
+                    advanced_oil_processing=self.advanced_oil_processing,
                     desired_output_rate=deficit,
                     crafting_items_available=self.crafting_items_available,
                     module=self._module,
@@ -199,7 +199,7 @@ class Factory:
             while deficit > 0:
                 self.burnable_production_lines.append(
                     getattr(items, burnable_fuel).creation_pipeline(
-                        advanced_oil_processing=advanced_oil_processing,
+                        advanced_oil_processing=self.advanced_oil_processing,
                         desired_output_rate=deficit,
                         crafting_items_available=self.crafting_items_available,
                         module=self._module,
@@ -211,7 +211,7 @@ class Factory:
         if len(self.electricity_production_lines) > 1:
             self.electricity_production_lines = [
                 getattr(items, "Electricity").creation_pipeline(
-                    advanced_oil_processing=advanced_oil_processing,
+                    advanced_oil_processing=self.advanced_oil_processing,
                     desired_output_rate=self.electricity_demand,
                     crafting_items_available=self.crafting_items_available,
                     module=self._module,
@@ -226,7 +226,7 @@ class Factory:
             for item in burnables:
                 self.burnable_production_lines = [
                     getattr(items, item).creation_pipeline(
-                        advanced_oil_processing=advanced_oil_processing,
+                        advanced_oil_processing=self.advanced_oil_processing,
                         desired_output_rate=self._burnable_demand(burnable_fuel=item),
                         crafting_items_available=self.crafting_items_available,
                         module=self._module,
@@ -288,7 +288,7 @@ class Factory:
             if target == 0:
                 continue
             new_bus_line = getattr(items, item).creation_pipeline(
-                advanced_oil_processing=advanced_oil_processing,
+                advanced_oil_processing=self.advanced_oil_processing,
                 desired_output_rate=target,
                 crafting_items_available=self.crafting_items_available,
                 module=self._module,
@@ -434,6 +434,20 @@ class MiddleFactory(Factory):
         "SteelFurnace",
         "ElectricMiningDrill",
         "AssemblingMachine2",
+        "Pumpjack",
+        "ChemicalPlant",
+        "OilRefinery",
+        "Boiler",
+        "SteamEngine",
+        "OffshorePump",
+    )
+    advanced_oil_processing = True
+
+class LateFactory(Factory):
+    crafting_items_available = (
+        "SteelFurnace",
+        "ElectricMiningDrill",
+        "AssemblingMachine3",
         "Pumpjack",
         "ChemicalPlant",
         "OilRefinery",

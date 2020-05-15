@@ -26,6 +26,7 @@ build red bottle line
     * start coal bus
     * assembly machine 1 line
 build green bottle line
+    * start stone brick bus (small)
     * upgrade iron bus (phase 2)
     * upgrade copper bus (phase 2)
     * upgrade power gen (phase 2)
@@ -34,9 +35,10 @@ build green bottle line
     * lab upgrade
     * assembly machine 2 line
 build blue bottle line
+    * start steel bus
     * switch to advanced oil processing and get to cracking
     * upgrade iron bus (phase 3)
-    * start steel bus
+    * upgrade furnaces on all lines
     * upgrade assembly machines on all lines
     * speed module 1 line (output will be reused in rocket control unit production)
     * start petroleum bus
@@ -135,7 +137,9 @@ jal6g==<<<
 ```
 * try north flow busses
 * stone kinda far from starting patches
-
+* get rid of all cliffs!!!
+* needs bigger copper patch (size)
+* don't do a bus factory. too long, too much running back and forth, too much belt
 
 ```
 >>>eNpjYBBk8GcAAweH1au07DhYkvMTc0A8BoYDYMyVnF9QkFqkm

@@ -181,7 +181,7 @@ class Item:
     def recipe(self, *, advanced_oil_processing):
         """Just grab the first recipe that works"""
         if advanced_oil_processing:
-            recipes = {r.__name__: r for f in self.produced_by_recipes}
+            recipes = {r.__class__.__name__: r for r in self.produced_by_recipes}
             if "AdvancedOilRecipe" in recipes:
                 return recipes["AdvancedOilRecipe"]
         return self.produced_by_recipes[0]
@@ -367,3 +367,10 @@ if __name__ == "__main__":
     )
     print(items.PetroleumGas.base_resource_requirements(qty=1))
     print(items.RocketPart.base_resource_requirements(qty=100))
+    print(items.IronOre.creation_pipeline(
+        desired_output_rate=30,
+        crafting_items_available=(
+            "ElectricMiningDrill"
+        ),
+        module=items.SpeedModule1,
+    ))

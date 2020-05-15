@@ -26,12 +26,10 @@ class Crafter(BaseItem):
 
     @property
     def productivity(self):
-        modifier = 0
         return self.base_productivity * self._modifier("productivity")
 
     @property
     def consumption(self):
-        modifier = 0
         return self.max_consumption * max(self._modifier("consumption"), 0.2)
 
 
@@ -133,8 +131,9 @@ item_defs = [
     ("SteamEngine", (SteamEngineItem,), {}),
     ("Electricity", (), {}),
     ("Steam", (), {}),
-    # ("SolarPanel", (), {}),
-    # ("Accumulator", (), {}),
+    ("SolarPanel", (), {}),
+    ("Accumulator", (), {}),
+    ("Radar", (), {}),
     # ("NuclearReactor", (), {}),
     # ("HeatPipe", (), {}),
     # ("HeatExchanger", (), {}),

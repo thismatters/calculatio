@@ -129,6 +129,7 @@ class CopperPlateRecipe(SmeltingRecipe):
 
 
 class SteelPlateRecipe(SmeltingRecipe):
+    crafting_time = 16
     inputs = {"IronPlate": 5}
     outputs = {"SteelPlate": 1}
 
@@ -233,6 +234,16 @@ class SatelliteRecipe(BasicCraftingRecipe):
         "Radar": 5,
     }
     outputs = {"Satellite": 1}
+
+
+class RadarRecipe(BasicCraftingRecipe):
+    crafting_time = 0.5
+    inputs = {
+        "IronPlate": 10,
+        "IronGearWheel": 5,
+        "ElectronicCircuit": 5,
+    }
+    outputs = {"Radar": 1}
 
 
 class RocketControlUnitRecipe(BasicCraftingRecipe):
@@ -428,43 +439,43 @@ class SpeedModule2Recipe(BasicCraftingRecipe):
 
 
 class SpeedModule3Recipe(BasicCraftingRecipe):
-    crafting_time = 5
+    crafting_time = 60
     inputs = {"AdvancedCircuit": 5, "ProcessingUnit": 5, "SpeedModule2": 5}
     outputs = {"SpeedModule3": 1}
 
 
 class EfficiencyModule1Recipe(BasicCraftingRecipe):
-    crafting_time = 5
+    crafting_time = 15
     inputs = {"ElectronicCircuit": 5, "AdvancedCircuit": 5}
     outputs = {"EfficiencyModule1": 1}
 
 
 class EfficiencyModule2Recipe(BasicCraftingRecipe):
-    crafting_time = 5
+    crafting_time = 30
     inputs = {"AdvancedCircuit": 5, "ProcessingUnit": 5, "EfficiencyModule1": 4}
     outputs = {"EfficiencyModule2": 1}
 
 
 class EfficiencyModule3Recipe(BasicCraftingRecipe):
-    crafting_time = 5
+    crafting_time = 60
     inputs = {"AdvancedCircuit": 5, "ProcessingUnit": 5, "EfficiencyModule2": 5}
     outputs = {"EfficiencyModule3": 1}
 
 
 class ProductivityModule1Recipe(BasicCraftingRecipe):
-    crafting_time = 5
+    crafting_time = 15
     inputs = {"ElectronicCircuit": 5, "AdvancedCircuit": 5}
     outputs = {"ProductivityModule1": 1}
 
 
 class ProductivityModule2Recipe(BasicCraftingRecipe):
-    crafting_time = 5
+    crafting_time = 30
     inputs = {"AdvancedCircuit": 5, "ProcessingUnit": 5, "ProductivityModule1": 4}
     outputs = {"ProductivityModule2": 1}
 
 
 class ProductivityModule3Recipe(BasicCraftingRecipe):
-    crafting_time = 5
+    crafting_time = 60
     inputs = {"AdvancedCircuit": 5, "ProcessingUnit": 5, "ProductivityModule2": 5}
     outputs = {"ProductivityModule3": 1}
 
