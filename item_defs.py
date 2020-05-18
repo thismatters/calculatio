@@ -26,7 +26,7 @@ class Crafter(BaseItem):
 
     @property
     def productivity(self):
-        return self.base_productivity * self._modifier("productivity")
+        return self.base_productivity + self._modifier("productivity")
 
     @property
     def consumption(self):
@@ -61,10 +61,10 @@ class SteamEngineItem(Crafter):
     power_output = 900  # kW
 
 
-class PumpingItem(BaseItem):
+class PumpingItem(Crafter):
     speed = 1200
     consumption = 0
-    productivity = 0
+    base_productivity = 0
     consumes = None
 
 

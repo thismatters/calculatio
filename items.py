@@ -1,12 +1,13 @@
 from math import ceil
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 
 from item_defs import item_defs
 import recipes as _recipes
 from utils import AdditiveUpdateDict
 
-_item_objects = {}
+item_objects = {}
 
 
 class Stringified:
@@ -168,49 +169,6 @@ class Line(Stringified):
         """
         pass
 
-class AdvancedOilProcessing:
-    def __init__(self, *, heavy_oil_demand=0, light_oil_demand=0, petroleum_gas_demand=0, module=None):
-        # This might get kinda ugly with variable names, but we're doing algebra 
-        #   here so get used to it
-        adv_oil_recipe = _recipes.AdvancedOilRecipe()
-        h2l_recipe = _recipes.HeavyOilToLightOilCrackingRecipe()
-        l2p_recipe = _recipes.LightOilToPetroleumCrackingRecipe()
-
-        heavy_output = adv_oil_recipe.outputs["HeavyOil"]
-        light_output = adv_oil_recipe.outputs["LightOil"]
-        petrol_output = adv_oil_recipe.outputs["PetroleumGas"]
-
-        heavy_cracking_input = h2l_recipe.input["HeavyOil"]
-        light_cracking_output = h2l_recipe.output["LightOil"]
-        heavy_cracking_ratio = light_cracking_output / heavy_cracking_input
-
-        light_cracking_input = l2p_recipe.input["LightOil"]
-        petrol_cracking_output = l2p_recipe.output["PetroleumGas"]
-        light_cracking_ratio = petrol_cracking_output / light_cracking_input
-
-        # "ticks" are the number of recipes that need to be completed per second
-        refinery_ticks = (heavy_cracking_ratio * heavy_oil_demand + light_oil_demand + light_cracking_ratio * petroleum_gas_demand) / (light_output + heavy_output * heavy_cracking_ratio + petrol_output * light_cracking_ratio)
-        heavy_cracking_ticks = ((heavy_output * refinery_ticks) - heavy_oil_demand) / heavy_cracking_input
-        light_cracking_ticks = (petroleum_gas_demand - (petrol_output * refinery_ticks)) / petrol_cracking_output
-
-        # convert to actual crafter counts using the adjusted crafting time
-        refinery_count = self._crafter_count(recipe=adv_oil_recipe, module=module, ticks=refinery_ticks)
-        heavy_cracker_count = self._crafter_count(recipe=h2l_recipe, module=module, ticks=heavy_cracking_ticks)
-        light_cracker_count = self._crafter_count(recipe=l2p_recipe, module=module, ticks=light_cracking_ticks)
-
-    def _crafter_count(self, *, recipe, module, ticks):
-        _crafter = recipe.made_in[0]
-        crafter = _item_objects[_crafter]
-        if module:
-            crafter.module_selection = module
-        unit_craft_time = recipe.crafting_time / crafter.speed  # seconds / tick
-        # productivity is a problem here...
-        craft_quantity = recipe.outputs[]
-        craft_rate = (craft_quantity / unit_craft_time) * (1 + crafter.productivity)
-        crafter_count = ticks / unit_craft_time
-        return crafter_count
-
-
 class Item:
     state = "solid"  # solid, liquid
     is_base_resource = False
@@ -228,7 +186,7 @@ class Item:
         for _crafter in recipe.made_in:
             if _crafter not in crafting_items_available:
                 continue
-            crafter = _item_objects[_crafter]
+            crafter = item_objects[_crafter]
             if selected_crafter is None:
                 selected_crafter = crafter
                 continue
@@ -245,7 +203,7 @@ class Item:
         # determine output quantity and scale
         output_qty = recipe.outputs[str(self)]
         for _input, input_qty in recipe.inputs.items():
-            input_item = _item_objects[_input]
+            input_item = item_objects[_input]
             # is base resource?
             _qty = qty * input_qty / output_qty
             if input_item.is_base_resource:
@@ -276,8 +234,9 @@ class Item:
         crafter = self.crafter(
             recipe=recipe, crafting_items_available=crafting_items_available
         )
-        # logging.debug(f">> using recipe {recipe}")
-        # logging.debug(f">> crafter selected {crafter}")
+        logging.debug(f"Producing {self} ({desired_output_rate}/s)")
+        logging.debug(f">> using recipe {recipe}")
+        logging.debug(f">> crafter selected {crafter}")
         pipeline_element = {
             "item": str(self),
             "target_output_rate": desired_output_rate,
@@ -290,7 +249,7 @@ class Item:
 
         unit_craft_time = recipe.crafting_time / crafter.speed  # seconds / item
         craft_quantity = recipe.outputs[str(self)]
-        craft_rate = (craft_quantity / unit_craft_time) * (1 + crafter.productivity)
+        craft_rate = (craft_quantity / unit_craft_time) * crafter.productivity
         # logging.debug(f"item {str(self)} :: unit craft rate {1/unit_craft_time} :: {str(crafter)}")
         crafters_required = ceil(desired_output_rate / craft_rate)
         actual_output_rate = crafters_required * craft_rate
@@ -300,7 +259,7 @@ class Item:
         power_consumption = crafters_required * crafter.consumption
         # 1000 kW = 1 MJ / s
         if crafter.consumes == "burnable":
-            fuel_item = _item_objects[burnable_fuel]
+            fuel_item = item_objects[burnable_fuel]
             fuel_value = fuel_item.fuel_value  # MJ
             pipeline_element.update(
                 {
@@ -320,7 +279,7 @@ class Item:
 
         for _input, qty in recipe.inputs.items():
             # find (best) recipe for each input
-            input_item = _item_objects[_input]
+            input_item = item_objects[_input]
             needed_rate = desired_output_rate / craft_quantity * qty
             pipeline_element["sources"].append(
                 input_item.creation_pipeline(
@@ -344,13 +303,13 @@ for name, recipe in recipes.items():
 for name, extra_bases, _item in item_defs:
     _item.update({"produced_by_recipes": recipes_by_item_produced.get(name, [])})
     # [Item].append('something')
-    _item_objects[name] = type(name, (Item, *extra_bases), _item)()
+    item_objects[name] = type(name, (Item, *extra_bases), _item)()
 
 
 class Items:
     def __getattr__(self, attr):
         try:
-            return _item_objects[attr]
+            return item_objects[attr]
         except KeyError:
             raise KeyError(f"There is no item called {attr!r}")
 
@@ -402,10 +361,12 @@ if __name__ == "__main__":
     )
     print(items.PetroleumGas.base_resource_requirements(qty=1))
     print(items.RocketPart.base_resource_requirements(qty=100))
-    print(items.IronOre.creation_pipeline(
-        desired_output_rate=30,
-        crafting_items_available=(
-            "ElectricMiningDrill"
-        ),
-        module=items.SpeedModule1,
-    ))
+    print(
+        items.IronOre.creation_pipeline(
+            desired_output_rate=30,
+            crafting_items_available=("ElectricMiningDrill"),
+            module=items.SpeedModule1,
+        )
+    )
+
+    AdvancedOilProcessing(heavy_oil_demand=25, petroleum_gas_demand=100)

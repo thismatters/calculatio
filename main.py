@@ -1,7 +1,8 @@
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 
-from factories import (SpeedRunProgression, LateFactory)
+from factories import SpeedRunProgression, LateFactory
 
 
 logging.debug("here")
@@ -26,11 +27,8 @@ if __name__ == "__main__":
     # print("\n".join([str(l) for l in rocket_factory.product_production_lines]))
     # print(rocket_factory.base_resources)
     d = LateFactory(
-    	desired_production_rates={
-	        "Satellite": 0.01,
-	    },
-	    module="SpeedModule1",
-	)
+        desired_production_rates={"Satellite": 0.01,}, module="SpeedModule1",
+    )
     print("\n".join([str(l) for l in d.product_production_lines]))
 """
 TODO:

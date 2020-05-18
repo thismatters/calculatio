@@ -5,6 +5,7 @@ from utils import AdditiveUpdateDict
 
 # logging.basicConfig(level=logging.DEBUG)
 
+
 class Factory:
     crafting_items_available = (
         "AssemblingMachine1",
@@ -59,8 +60,12 @@ class Factory:
             self.crafted_item_counts = crafted_item_counts
         self.advanced_oil_demand = {}
         if advanced_oil_processing:
-            self.advanced_oil_demand = {"HeavyOil", "LightOil", "PetroleumGas"}
-        [self.bus_items.append(i) for i in self.advanced_oil_demand if i not in self.bus_items]
+            self.advanced_oil_demand = {"HeavyOil": 0, "LightOil": 0, "PetroleumGas": 0}
+        [
+            self.bus_items.append(i)
+            for i in self.advanced_oil_demand
+            if i not in self.bus_items
+        ]
         self.burnable_fuels = AdditiveUpdateDict()
         self.product_production_lines = []
         self.bus_production_lines = []
@@ -77,7 +82,7 @@ class Factory:
         self.satisfy_production_requirements()
         self.split_bus_production()
         if advanced_oil_processing:
-            # all advanced oil processing outputs should be bus items, 
+            # all advanced oil processing outputs should be bus items,
             #   pull them together and balance
             self.consolidate_oil_processing()
         self.reconcile_electricity_usage()
@@ -302,7 +307,8 @@ class Factory:
         self.bus_production_lines = new_bus_production_lines
 
     def consolidate_oil_processing(self):
-        
+        pass
+
 
 class Progression:
     bus_ordering = [
@@ -447,6 +453,7 @@ class MiddleFactory(Factory):
     )
     advanced_oil_processing = True
 
+
 class LateFactory(Factory):
     crafting_items_available = (
         "SteelFurnace",
@@ -526,12 +533,7 @@ class SpeedRunProgression(Progression):
         ),
     ]
     rocket_factory = RocketFactory(
-        desired_production_rates={
-            "RocketPart": 0.1,
-        },
-        crafted_item_counts={
-            "RocketPart": 100,
-            "RocketSilo": 1,
-        },
+        desired_production_rates={"RocketPart": 0.1,},
+        crafted_item_counts={"RocketPart": 100, "RocketSilo": 1,},
         module="SpeedModule1",
     )

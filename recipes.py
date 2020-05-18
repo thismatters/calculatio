@@ -266,7 +266,13 @@ class RocketFuelRecipe(LiquidCraftingRecipe):
 
 class RocketSiloRecipe(BasicCraftingRecipe):
     crafting_time = 30
-    inputs = {"Concrete": 1000, "ElectricEngineUnit": 200, "Pipe": 100, "ProcessingUnit": 200, "SteelPlate": 1000}
+    inputs = {
+        "Concrete": 1000,
+        "ElectricEngineUnit": 200,
+        "Pipe": 100,
+        "ProcessingUnit": 200,
+        "SteelPlate": 1000,
+    }
     outputs = {"RocketSilo": 1}
 
 
