@@ -91,7 +91,6 @@ class Line(Stringified):
             )
             self.sources.insert(remove_idx, replacement)
             source_item_lines.append(removed)
-
         return source_item_lines
 
     def _crafters(self, *, crafters=None):
@@ -169,6 +168,48 @@ class Line(Stringified):
         """
         pass
 
+class AdvancedOilProcessing:
+    def __init__(self, *, heavy_oil_demand=0, light_oil_demand=0, petroleum_gas_demand=0, module=None):
+        # This might get kinda ugly with variable names, but we're doing algebra 
+        #   here so get used to it
+        adv_oil_recipe = _recipes.AdvancedOilRecipe()
+        h2l_recipe = _recipes.HeavyOilToLightOilCrackingRecipe()
+        l2p_recipe = _recipes.LightOilToPetroleumCrackingRecipe()
+
+        heavy_output = adv_oil_recipe.outputs["HeavyOil"]
+        light_output = adv_oil_recipe.outputs["LightOil"]
+        petrol_output = adv_oil_recipe.outputs["PetroleumGas"]
+
+        heavy_cracking_input = h2l_recipe.input["HeavyOil"]
+        light_cracking_output = h2l_recipe.output["LightOil"]
+        heavy_cracking_ratio = light_cracking_output / heavy_cracking_input
+
+        light_cracking_input = l2p_recipe.input["LightOil"]
+        petrol_cracking_output = l2p_recipe.output["PetroleumGas"]
+        light_cracking_ratio = petrol_cracking_output / light_cracking_input
+
+        # "ticks" are the number of recipes that need to be completed per second
+        refinery_ticks = (heavy_cracking_ratio * heavy_oil_demand + light_oil_demand + light_cracking_ratio * petroleum_gas_demand) / (light_output + heavy_output * heavy_cracking_ratio + petrol_output * light_cracking_ratio)
+        heavy_cracking_ticks = ((heavy_output * refinery_ticks) - heavy_oil_demand) / heavy_cracking_input
+        light_cracking_ticks = (petroleum_gas_demand - (petrol_output * refinery_ticks)) / petrol_cracking_output
+
+        # convert to actual crafter counts using the adjusted crafting time
+        refinery_count = self._crafter_count(recipe=adv_oil_recipe, module=module, ticks=refinery_ticks)
+        heavy_cracker_count = self._crafter_count(recipe=h2l_recipe, module=module, ticks=heavy_cracking_ticks)
+        light_cracker_count = self._crafter_count(recipe=l2p_recipe, module=module, ticks=light_cracking_ticks)
+
+    def _crafter_count(self, *, recipe, module, ticks):
+        _crafter = recipe.made_in[0]
+        crafter = _item_objects[_crafter]
+        if module:
+            crafter.module_selection = module
+        unit_craft_time = recipe.crafting_time / crafter.speed  # seconds / tick
+        # productivity is a problem here...
+        craft_quantity = recipe.outputs[]
+        craft_rate = (craft_quantity / unit_craft_time) * (1 + crafter.productivity)
+        crafter_count = ticks / unit_craft_time
+        return crafter_count
+
 
 class Item:
     state = "solid"  # solid, liquid
@@ -178,12 +219,8 @@ class Item:
     def __str__(self):
         return self.__class__.__name__
 
-    def recipe(self, *, advanced_oil_processing):
+    def recipe(self):
         """Just grab the first recipe that works"""
-        if advanced_oil_processing:
-            recipes = {r.__class__.__name__: r for r in self.produced_by_recipes}
-            if "AdvancedOilRecipe" in recipes:
-                return recipes["AdvancedOilRecipe"]
         return self.produced_by_recipes[0]
 
     def crafter(self, *, recipe, crafting_items_available):
@@ -202,9 +239,9 @@ class Item:
                 raise Exception(f"Item {self} cannot be produced, no crafter")
         return selected_crafter
 
-    def base_resource_requirements(self, *, qty=1, advanced_oil_processing=False):
+    def base_resource_requirements(self, *, qty=1):
         reqs = AdditiveUpdateDict()
-        recipe = self.recipe(advanced_oil_processing=advanced_oil_processing)
+        recipe = self.recipe()
         # determine output quantity and scale
         output_qty = recipe.outputs[str(self)]
         for _input, input_qty in recipe.inputs.items():
@@ -216,8 +253,7 @@ class Item:
                 reqs.update({_input: _qty})
                 continue
             logging.debug(f"recurse on {input_item} {_qty}")
-            reqs.update(input_item.base_resource_requirements(
-                qty=_qty, advanced_oil_processing=advanced_oil_processing))
+            reqs.update(input_item.base_resource_requirements(qty=_qty))
 
         return reqs
 
@@ -231,13 +267,12 @@ class Item:
         ),
         burnable_fuel="Coal",
         module=None,
-        advanced_oil_processing=False
     ):
         """Specifies the numbers of equipment needed to produce the
         `desired_output_rate` (per second) from base resources
         """
         # how am I made?
-        recipe = self.recipe(advanced_oil_processing=advanced_oil_processing)
+        recipe = self.recipe()
         crafter = self.crafter(
             recipe=recipe, crafting_items_available=crafting_items_available
         )

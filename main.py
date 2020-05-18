@@ -39,13 +39,12 @@ TODO:
 [*] Incorporate modules
 [*] sub-bus production
 [*] calculate BOM for creating infrastructure (miners, smelters, assembly machines, power gen, etc.)
+* better accounting for advanced oil processing (cracking etc.)
 * account for inserters (approx) in BOM
 * Better data view
 * add speed module line to the blue bottle stage
-* better accounting for advanced oil processing (cracking etc.)
+* add support for assembly machine balancing, e.g. use a slower machine in order 
+   to keep the number of machines consistent (copper wire in electric circuits)
 * power discrepancy...
+* revise plan
 """
-
-
-# {'IronOre': 30579.4, 'Stone': 4705.0, 'Water': 18692.222222222223, 'CopperOre': 6670.5, 'CrudeOil': 37377.77777777778, 'Coal': 495.0}
-# {'IronOre': 30889.8, 'Stone': 4705.0, 'Water': 19984.444444444445, 'CopperOre': 7325.5, 'CrudeOil': 44088.88888888889, 'Coal': 590.0}

@@ -57,8 +57,10 @@ class Factory:
             self.bus_items = bus_items
         if crafted_item_counts is not None:
             self.crafted_item_counts = crafted_item_counts
-        if advanced_oil_processing is not None:
-            self.advanced_oil_processing = advanced_oil_processing
+        self.advanced_oil_demand = {}
+        if advanced_oil_processing:
+            self.advanced_oil_demand = {"HeavyOil", "LightOil", "PetroleumGas"}
+        [self.bus_items.append(i) for i in self.advanced_oil_demand if i not in self.bus_items]
         self.burnable_fuels = AdditiveUpdateDict()
         self.product_production_lines = []
         self.bus_production_lines = []
@@ -73,8 +75,12 @@ class Factory:
         if self.module is not None:
             self._module = getattr(items, self.module)
         self.satisfy_production_requirements()
-        self.reconcile_electricity_usage()
         self.split_bus_production()
+        if advanced_oil_processing:
+            # all advanced oil processing outputs should be bus items, 
+            #   pull them together and balance
+            self.consolidate_oil_processing()
+        self.reconcile_electricity_usage()
         self.tally_equipment()
         self.tally_base_resources()
 
@@ -102,7 +108,6 @@ class Factory:
     def satisfy_production_requirements(self):
         for _item, production_rate in self.desired_production_rates.items():
             production_line = getattr(items, _item).creation_pipeline(
-                advanced_oil_processing=self.advanced_oil_processing,
                 desired_output_rate=production_rate,
                 crafting_items_available=self.crafting_items_available,
                 module=self._module,
@@ -120,8 +125,7 @@ class Factory:
         for _item, qty in to_craft.items():
             item = getattr(items, _item)
             logging.debug(f"checking resources {item} {qty}")
-            self.base_resources.update(item.base_resource_requirements(
-                qty=qty, advanced_oil_processing=self.advanced_oil_processing))
+            self.base_resources.update(item.base_resource_requirements(qty=qty))
 
     @property
     def items_produced(self):
@@ -159,7 +163,6 @@ class Factory:
         while deficit > 0:
             self.electricity_production_lines.append(
                 getattr(items, "Electricity").creation_pipeline(
-                    advanced_oil_processing=self.advanced_oil_processing,
                     desired_output_rate=deficit,
                     crafting_items_available=self.crafting_items_available,
                     module=self._module,
@@ -199,7 +202,6 @@ class Factory:
             while deficit > 0:
                 self.burnable_production_lines.append(
                     getattr(items, burnable_fuel).creation_pipeline(
-                        advanced_oil_processing=self.advanced_oil_processing,
                         desired_output_rate=deficit,
                         crafting_items_available=self.crafting_items_available,
                         module=self._module,
@@ -211,7 +213,6 @@ class Factory:
         if len(self.electricity_production_lines) > 1:
             self.electricity_production_lines = [
                 getattr(items, "Electricity").creation_pipeline(
-                    advanced_oil_processing=self.advanced_oil_processing,
                     desired_output_rate=self.electricity_demand,
                     crafting_items_available=self.crafting_items_available,
                     module=self._module,
@@ -226,7 +227,6 @@ class Factory:
             for item in burnables:
                 self.burnable_production_lines = [
                     getattr(items, item).creation_pipeline(
-                        advanced_oil_processing=self.advanced_oil_processing,
                         desired_output_rate=self._burnable_demand(burnable_fuel=item),
                         crafting_items_available=self.crafting_items_available,
                         module=self._module,
@@ -287,8 +287,10 @@ class Factory:
         for item, target in busses.items():
             if target == 0:
                 continue
+            if item in self.advanced_oil_demand:
+                self.advanced_oil_demand[item] += target
+                continue
             new_bus_line = getattr(items, item).creation_pipeline(
-                advanced_oil_processing=self.advanced_oil_processing,
                 desired_output_rate=target,
                 crafting_items_available=self.crafting_items_available,
                 module=self._module,
@@ -299,6 +301,8 @@ class Factory:
             new_bus_production_lines.append(new_bus_line)
         self.bus_production_lines = new_bus_production_lines
 
+    def consolidate_oil_processing(self):
+        
 
 class Progression:
     bus_ordering = [
